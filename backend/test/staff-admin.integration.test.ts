@@ -157,7 +157,7 @@ describe("completed end-to-end lifecycle (#21)", () => {
     const queue = await request(app).get("/api/staff/queue").set("Authorization", `Bearer ${staff}`);
     const row = queue.body.data.rows.find((r: { token: string }) => r.token === order.token);
     expect(row).toBeDefined();
-    expect(row.studentName).toBe("Arjun Menon");
+    expect(row.studentName).toBe("Gangadhar");
     expect(row.studentId).toBe("MLR2291");
 
     // Staff starts processing.
@@ -323,7 +323,7 @@ describe("staff server-side search (#2)", () => {
     const byDoc = await request(app).get("/api/staff/queue?q=notes").set("Authorization", `Bearer ${staff}`);
     expect(byDoc.body.data.rows.some((r: { token: string }) => r.token === order.token)).toBe(true);
 
-    const byName = await request(app).get("/api/staff/queue?q=Arjun").set("Authorization", `Bearer ${staff}`);
+    const byName = await request(app).get("/api/staff/queue?q=Gangadhar").set("Authorization", `Bearer ${staff}`);
     expect(byName.body.data.rows.some((r: { token: string }) => r.token === order.token)).toBe(true);
 
     const byId = await request(app).get("/api/staff/queue?q=MLR2291").set("Authorization", `Bearer ${staff}`);
