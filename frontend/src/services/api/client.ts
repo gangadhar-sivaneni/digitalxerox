@@ -1,7 +1,10 @@
 import type { ApiEnvelope, ApiErrorShape } from "../../types";
 import { clearSession } from "../storage/session";
 
-const BASE = "/api";
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
+const BASE = configuredApiUrl
+  ? `${configuredApiUrl.replace(/\/api$/, "")}/api`
+  : "/api";
 
 export class ApiClientError extends Error {
   status: number;
