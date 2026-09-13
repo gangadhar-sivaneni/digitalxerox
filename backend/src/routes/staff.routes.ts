@@ -165,7 +165,16 @@ router.post("/orders/:id/status", validate(statusSchema), asyncHandler(async (re
     return;
   }
   const updated = applyOrderTransition(order, status, req.user!, reason);
-  res.json({ data: orderDTO(updated, queueFor(updated.token, undefined)) });
+  // A cash-at-counter order is settled the moment the staff marks it completed —
+  // otherwise it would stay PENDING forever and never count toward revenue.
+  if (
+    status === "COMPLETED" &&
+    updated.paymentMethod === "CASH" &&
+    updated.paymentStatus !== "PAID"
+  ) {
+    verifyCashPayment(order, req.user!, order.totalPaise);
+  }
+  res.json({ data: orderDTO(order, queueFor(order.token, undefined)) });
 }));
 
 const cashSchema = z.object({

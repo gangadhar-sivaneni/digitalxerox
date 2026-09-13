@@ -236,6 +236,47 @@ The application is deployed using AWS services including:
 
 ---
 
+# ☁️ Deploying on Render (demo)
+
+If the backend is deployed on Render, two things are easy to get wrong:
+
+## 1. Payments silently stay `PENDING` → revenue shows ₹0
+
+The backend runs the **built-in payment simulator** only when `RAZORPAY_MOCK=1`.
+If Render env vars contain Razorpay keys (`RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`),
+the simulator switches OFF and the app creates *real* Razorpay test orders — which
+are usually abandoned in a demo, so orders remain `PENDING` and the Admin dashboard
+“Revenue” stays at zero.
+
+Fix: set the Render backend environment variable **`RAZORPAY_MOCK=1`** (keep the
+demo flow). To test the real gateway later, remove it and complete a test payment.
+
+## 2. Database “deletes itself” on every deploy
+
+The whole database (`storage/db.json`) and uploaded documents (`storage/documents`)
+are written to the instance’s **ephemeral disk**. Render’s free tier wipes that disk
+on every deploy/restart, so the app re-seeds from scratch each time.
+
+Fix — make the storage path persistent, one of:
+
+* **Render Persistent Disk (recommended, paid)** — attach a disk under
+  Service → Disks (e.g. mount point `/var/data`), then set backend env vars:
+  * `DB_FILE=/var/data/db.json`
+  * `DOC_STORAGE=/var/data/documents`
+* **AWS EC2 (EBS-backed)** — see `AWS_EC2_DEPLOYMENT_GUIDE.md`, which mounts a
+  persistent volume and points `DB_FILE`/`DOC_STORAGE` at it.
+
+The app already respects both env vars — storage is only lost because the disk
+itself is not persistent.
+
+## Bonus: correct “Today”/hour graphs on the Admin dashboard
+
+Render’s servers default to UTC. Set the backend environment variable
+**`TZ=Asia/Kolkata`** so the “today” window and the Orders-by-hour chart follow
+the shop’s clock instead of UTC.
+
+---
+
 # 🤖 AI-Assisted Development
 
 AI tools and models were used during different stages of development, design, debugging, ideation, and implementation.
