@@ -187,6 +187,19 @@ export function streamDocument(
   file: string;
   attachment: "inline" | "attachment";
 } {
+  const resolvedFilePath = doc.storageKey && !doc.storageKey.startsWith("seed:")
+    ? path.resolve(env.DOC_STORAGE, doc.storageKey)
+    : null;
+  logger.info("Document preview requested", {
+    documentId: doc.documentId,
+    userId: user.userId,
+    userRole: user.role,
+    document: doc,
+    storageKey: doc.storageKey,
+    resolvedFilePath,
+    fileExists: resolvedFilePath ? fs.existsSync(resolvedFilePath) : false,
+  });
+
   if (!canAccessDocument(doc, user)) {
     throw ApiError.forbidden(
       "You do not have access to this document."
