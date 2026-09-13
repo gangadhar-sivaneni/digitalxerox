@@ -50,6 +50,12 @@ export const env = {
   DB_FILE: str("DB_FILE", path.join(ROOT, "storage", "db.json")),
   DOC_STORAGE: str("DOC_STORAGE", path.join(ROOT, "storage", "documents")),
   CORS_ORIGIN: str("CORS_ORIGIN", "*"),
+  /**
+   * Comma-separated frontend origins allowed to embed document previews
+   * via iframe (CSP frame-ancestors). Local dev origins are appended
+   * automatically outside production.
+   */
+  FRAME_ANCESTORS: str("FRAME_ANCESTORS", "https://digitalxerox.onrender.com"),
   SHOP_CLOSED_MESSAGE: str("SHOP_CLOSED_MESSAGE", "The shop is currently closed."),
   RAZORPAY_KEY_ID: str("RAZORPAY_KEY_ID", ""),
   RAZORPAY_KEY_SECRET: str("RAZORPAY_KEY_SECRET", ""),

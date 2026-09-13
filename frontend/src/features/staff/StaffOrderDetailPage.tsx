@@ -88,6 +88,7 @@ export function StaffOrderDetailPage() {
 
   const previewUrl = selectedDocument ? (token ? documentDownloadUrl(selectedDocument.accessUrl, token) : selectedDocument.accessUrl) : null;
   const previewIsImage = !!selectedDocument?.mimeType?.startsWith("image/");
+  const previewIsInline = previewIsImage || selectedDocument?.mimeType === "application/pdf";
 
   const actions: { status: "PROCESSING" | "READY" | "COMPLETED" | "REJECTED"; label: string; primary?: boolean }[] = [];
   if (status === "RECEIVED") {
@@ -171,12 +172,20 @@ export function StaffOrderDetailPage() {
                     alt={selectedDocument.fileName}
                     style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 6 }}
                   />
-                ) : (
+                ) : previewIsInline ? (
                   <iframe
                     src={previewUrl}
                     title={selectedDocument.fileName}
                     style={{ width: "100%", height: "100%", border: "none", background: "#fff", borderRadius: 6 }}
                   />
+                ) : (
+                  <div className="panel panel-pad" style={{ maxWidth: 420, textAlign: "center", alignSelf: "center" }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>{selectedDocument.fileName}</div>
+                    <p className="muted" style={{ marginBottom: 12 }}>
+                      This file type can't be previewed in the browser.
+                    </p>
+                    <a className="btn btn-primary" href={previewUrl} download={selectedDocument.fileName}>Download to view</a>
+                  </div>
                 )
               ) : (
                 <div className="panel panel-pad" style={{ maxWidth: 420, textAlign: "center" }}>

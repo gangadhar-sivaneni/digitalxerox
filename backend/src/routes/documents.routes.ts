@@ -1,6 +1,7 @@
 import fs from "fs";
 import { Router } from "express";
 import multer from "multer";
+import { env } from "../config/env";
 import { findDocument, listDocuments } from "../data/repo";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { ApiError, asyncHandler } from "../utils/errors";
@@ -11,6 +12,16 @@ import {
 } from "../services/documents.service";
 
 const router = Router();
+
+/** Origins allowed to embed the preview iframe (CSP frame-ancestors). */
+function frameAncestors(): string {
+  const configured = env.FRAME_ANCESTORS.split(",").map((s) => s.trim()).filter(Boolean);
+  const devOrigins =
+    env.NODE_ENV !== "production"
+      ? ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"]
+      : [];
+  return [...new Set([...configured, ...devOrigins])].join(" ");
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -52,6 +63,9 @@ router.get("/:id/file", requireAuth, asyncHandler(async (req, res) => {
   const doc = findDocument(String(req.params.id));
   if (!doc) throw ApiError.notFound("Document not found.");
   const { file, attachment } = streamDocument(doc, req.user!);
+  res.removeHeader("X-Frame-Options");
+  res.setHeader("Content-Security-Policy", `frame-ancestors ${frameAncestors()}`);
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
   res.setHeader("Content-Type", doc.mimeType || "application/octet-stream");
   res.setHeader("Content-Disposition", `${attachment}; filename="${encodeURIComponent(doc.fileName)}"`);
   res.setHeader("X-Content-Type-Options", "nosniff");
