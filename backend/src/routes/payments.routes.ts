@@ -87,7 +87,7 @@ router.post("/razorpay/verify", validate(verifySchema), asyncHandler(async (req,
 
 /** POST /api/payments/:orderId/abandon — cancels a checkout that was never paid. */
 router.post("/:orderId/abandon", asyncHandler(async (req, res) => {
-  abandonCheckout(req.user!, req.params.orderId);
+  abandonCheckout(req.user!, String(req.params.orderId));
   res.json({ data: { ok: true } });
 }));
 

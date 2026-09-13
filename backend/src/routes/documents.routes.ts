@@ -38,7 +38,7 @@ router.get("/", requireAuth, asyncHandler(async (req, res) => {
 }));
 
 router.get("/:id/meta", requireAuth, asyncHandler(async (req, res) => {
-  const doc = findDocument(req.params.id);
+  const doc = findDocument(String(req.params.id));
   if (!doc) throw ApiError.notFound("Document not found.");
   const allowed =
     doc.userId === req.user!.userId ||
@@ -49,7 +49,7 @@ router.get("/:id/meta", requireAuth, asyncHandler(async (req, res) => {
 }));
 
 router.get("/:id/file", requireAuth, asyncHandler(async (req, res) => {
-  const doc = findDocument(req.params.id);
+  const doc = findDocument(String(req.params.id));
   if (!doc) throw ApiError.notFound("Document not found.");
   const { file, attachment } = streamDocument(doc, req.user!);
   res.setHeader("Content-Type", doc.mimeType || "application/octet-stream");

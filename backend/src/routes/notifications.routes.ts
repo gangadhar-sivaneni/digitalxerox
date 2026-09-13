@@ -30,7 +30,7 @@ const readSchema = z.object({
 
 router.post("/:id/read", validate(readSchema), asyncHandler(async (req, res) => {
   const read = (req.body as z.infer<typeof readSchema>).read ?? true;
-  const ok = markNotificationRead(req.params.id, req.user!.userId);
+  const ok = markNotificationRead(String(req.params.id), req.user!.userId);
   if (!ok) throw ApiError.notFound("Notification not found.");
   res.json({ data: { ok: true, read } });
 }));

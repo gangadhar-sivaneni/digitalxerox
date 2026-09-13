@@ -114,7 +114,7 @@ const paySchema = z.object({
 });
 
 router.post("/:id/pay", validate(paySchema), asyncHandler(async (req, res) => {
-  const order = findOrder(req.params.id, req.user!);
+  const order = findOrder(String(req.params.id), req.user!);
   const { method, idempotencyKey } = req.body as z.infer<typeof paySchema>;
   const result = payOrder(order, method, idempotencyKey);
   res.json({ data: orderDTO(result.order, queueFor(result.order.token, req.user!.userId)) });
@@ -132,12 +132,12 @@ router.get("/", asyncHandler(async (req, res) => {
 }));
 
 router.get("/:id", asyncHandler(async (req, res) => {
-  const order = findOrder(req.params.id, req.user!);
+  const order = findOrder(String(req.params.id), req.user!);
   res.json({ data: orderDTO(order, queueFor(order.token, req.user!.userId)) });
 }));
 
 router.get("/:id/queue", asyncHandler(async (req, res) => {
-  const order = findOrder(req.params.id, req.user!);
+  const order = findOrder(String(req.params.id), req.user!);
   res.json({ data: queueFor(order.token, req.user!.userId) });
 }));
 

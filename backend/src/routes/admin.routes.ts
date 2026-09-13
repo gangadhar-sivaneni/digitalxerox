@@ -81,7 +81,7 @@ router.post("/products", validate(productSchema), asyncHandler(async (req, res) 
 
 router.patch("/products/:id", validate(productSchema.partial()), asyncHandler(async (req, res) => {
   const actor = req.user!;
-  const existing = findProduct(req.params.id);
+  const existing = findProduct(String(req.params.id));
   if (!existing) throw ApiError.notFound("Product not found.");
   const patch = req.body as Partial<z.infer<typeof productSchema>>;
   const before = { pricePaise: existing.pricePaise, stock: existing.stock, active: existing.active };
@@ -117,14 +117,14 @@ router.patch("/products/:id", validate(productSchema.partial()), asyncHandler(as
 
 router.delete("/products/:id", asyncHandler(async (req, res) => {
   const actor = req.user!;
-  const ok = deleteProduct(req.params.id);
+  const ok = deleteProduct(String(req.params.id));
   if (!ok) throw ApiError.notFound("Product not found.");
   insertAudit({
     actorId: actor.userId,
     actorRole: actor.role,
     action: "PRODUCT_DELETED",
     targetKind: "product",
-    targetId: req.params.id,
+    targetId: String(req.params.id),
   });
   res.json({ data: { ok: true } });
 }));
@@ -135,10 +135,10 @@ const pricingSchema = z.object({ ratePaise: z.number().int().min(1) });
 
 router.patch("/pricing/:id", validate(pricingSchema), asyncHandler(async (req, res) => {
   const actor = req.user!;
-  const rule = getPricingRules().find((p) => p.id === req.params.id);
+  const rule = getPricingRules().find((p) => p.id === String(req.params.id));
   if (!rule) throw ApiError.notFound("Pricing rule not found.");
   const { ratePaise } = req.body as z.infer<typeof pricingSchema>;
-  updatePricingRule(req.params.id, ratePaise, new Date().toISOString());
+  updatePricingRule(String(req.params.id), ratePaise, new Date().toISOString());
   const settings = getSettings();
   // New rates apply to new orders only; existing orders keep their locked price.
   updateSettings({ pricingVersion: settings.pricingVersion + 1 });
@@ -236,10 +236,10 @@ const staffPatchSchema = z.object({
 
 router.patch("/staff-users/:id", validate(staffPatchSchema), asyncHandler(async (req, res) => {
   const actor = req.user!;
-  const target = findUserById(req.params.id);
+  const target = findUserById(String(req.params.id));
   if (!target || target.role !== "STAFF") throw ApiError.notFound("Staff user not found.");
   const patch = req.body as z.infer<typeof staffPatchSchema>;
-  const user = updateUser(req.params.id, { active: patch.active, counter: patch.counter })!;
+  const user = updateUser(String(req.params.id), { active: patch.active, counter: patch.counter })!;
   insertAudit({
     actorId: actor.userId,
     actorRole: actor.role,
@@ -260,7 +260,7 @@ router.patch("/staff-users/:id", validate(staffPatchSchema), asyncHandler(async 
 
 router.delete("/staff-users/:id", asyncHandler(async (req, res) => {
   const actor = req.user!;
-  const target = findUserById(req.params.id);
+  const target = findUserById(String(req.params.id));
   if (!target || target.role !== "STAFF") throw ApiError.notFound("Staff user not found.");
   updateUser(target.userId, { active: false, removedAt: new Date().toISOString() });
   insertAudit({
@@ -278,9 +278,9 @@ router.delete("/staff-users/:id", asyncHandler(async (req, res) => {
 // can be signed back in by the shop. Never escalates the role.
 router.post("/staff-users/:id/reset-password", asyncHandler(async (req, res) => {
   const actor = req.user!;
-  const target = findUserById(req.params.id);
+  const target = findUserById(String(req.params.id));
   if (!target || target.role !== "STAFF") throw ApiError.notFound("Staff user not found.");
-  updateUser(req.params.id, { passwordHash: bcrypt.hashSync("demo1234", 10) });
+  updateUser(String(req.params.id), { passwordHash: bcrypt.hashSync("demo1234", 10) });
   insertAudit({
     actorId: actor.userId,
     actorRole: actor.role,

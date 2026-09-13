@@ -127,7 +127,7 @@ router.get("/orders", asyncHandler(async (req, res) => {
 }));
 
 router.get("/orders/:id", asyncHandler(async (req, res) => {
-  const order = parseOrderId(req.params.id);
+  const order = parseOrderId(String(req.params.id));
   const student = findUserById(order.userId);
   const payment = listPayments().find((p) => p.orderId === order.orderId);
   const documents = (order.documentIds?.length ? order.documentIds : order.documentId ? [order.documentId] : [])
@@ -157,7 +157,7 @@ const statusSchema = z.object({
 });
 
 router.post("/orders/:id/status", validate(statusSchema), asyncHandler(async (req, res) => {
-  const order = parseOrderId(req.params.id);
+  const order = parseOrderId(String(req.params.id));
   const { status, reason } = req.body as z.infer<typeof statusSchema>;
   if (status === "REJECTED") {
     const updated = rejectOrder(order, req.user!, reason || "Requested by staff.");
@@ -173,7 +173,7 @@ const cashSchema = z.object({
 });
 
 router.post("/orders/:id/payment/verify-cash", validate(cashSchema), asyncHandler(async (req, res) => {
-  const order = parseOrderId(req.params.id);
+  const order = parseOrderId(String(req.params.id));
   const { amountPaise } = req.body as z.infer<typeof cashSchema>;
   if (amountPaise < order.totalPaise) {
     throw ApiError.unprocessable("Amount collected is less than the order total.");
